@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
-
+using SyncthingService;
 namespace SyncthingService
 {
-    internal static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        static void Main()
-        {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new Service1()
-            };
-            ServiceBase.Run(ServicesToRun);
-        }
-    }
+	public class Program
+	{
+		public static void Main(string[] args)
+		{
+			CreateHostBuilder(args).Build().Run();
+		}
+		public static HostApplicationBuilder CreateHostBuilder(string[] args) {
+			HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+			builder.Services.AddHostedService<Worker>();
+			builder.Services.AddLogging(configure => configure.AddEventLog());
+			builder.Configuration.AddEnvironmentVariables();
+			builder.Services.AddSingleton(sp =>
+			{
+				IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+				string secret = configuration["SyncthingAPIKey"] ?? throw new Exception("APIKey not found in environment variables");
+				return secret;
+			});
+			return builder;
+		}
+	}
 }
