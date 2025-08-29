@@ -9,7 +9,13 @@ namespace SyncthingService
 		}
 		public static HostApplicationBuilder CreateHostBuilder(string[] args) {
 			HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+			builder.Services.AddWindowsService(options =>
+			{
+				options.ServiceName = "Syncthing Server";
+			});
+			builder.Services.AddSingleton<Worker>();
 			builder.Services.AddHostedService<Worker>();
+
 			builder.Services.AddLogging(configure => configure.AddEventLog());
 			builder.Configuration.AddEnvironmentVariables();
 			builder.Services.AddSingleton(sp =>
